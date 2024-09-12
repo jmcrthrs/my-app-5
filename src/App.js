@@ -1,3 +1,4 @@
+import * as Y from 'yjs'
 import logo from './logo.svg';
 import './App.css';
 
