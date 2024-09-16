@@ -10,15 +10,17 @@ import {
   WebsocketProvider as WebsocketProviderNew,
   handleWebSocketMessage,
   handleWebSocketOpen,
+  handleWebSocketClose
 } from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket";
 import { WebsocketProvider as WebsocketProviderOriginal } from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket-original";
 
-import { fromBase64, toBase64 } from 'lib0/buffer';
+import { fromBase64, toBase64 } from "lib0/buffer";
 
 Quill.register("modules/cursors", QuillCursors);
 
 function App() {
   const [number, setNumber] = useState(0);
+  const wsRef = React.useRef(null)
   console.log("render", number);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ function App() {
      */
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
+    wsRef.current = websocket
     //websocket.binaryType = "arraybuffer";
 
     // Connection opened
@@ -78,22 +81,31 @@ function App() {
       handleWebSocketOpen(providerNew, websocket);
     });
 
+    // Connection opened
+    websocket.addEventListener("close", () => {
+      handleWebSocketClose(providerNew, websocket);
+    });
+
     // Listen for messages
     websocket.addEventListener("message", (event) => {
       //https://github.com/yjs/y-websocket/pull/78
-      const data = fromBase64(event.data)
-      handleWebSocketMessage(providerNew, {data});
+      const data = fromBase64(event.data);
+      handleWebSocketMessage(providerNew, { data });
     });
 
     const customSend = (p) => {
       //websocket.send(p);
       //https://github.com/yjs/y-websocket/pull/78
-      websocket.send(toBase64(p));
+      try {
+        websocket.send(toBase64(p));
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     const providerNew = new WebsocketProviderNew(
       //"ws:/localhost:1234",
-      "ws:/localhost:8081",
+      "",
       "room-1",
       ydoc,
       { customSend }
@@ -112,6 +124,9 @@ function App() {
 
   return (
     <div className="App">
+      <button onClick={()=>{
+        wsRef.current.close()
+      }}>Close websocket</button>
       <div id="editor" />
     </div>
   );
