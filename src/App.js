@@ -6,10 +6,8 @@ import { QuillBinding } from "y-quill";
 import Quill from "quill";
 import "quill/dist/quill.core.css";
 import QuillCursors from "quill-cursors";
-import { WebsocketProvider } from "y-websocket";
-//import { WebsocketProvider } from "/Users/jamie/Documents/GitHub/y-websocket";
-
-
+//import { WebsocketProvider } from "y-websocket";
+import { WebsocketProvider } from "/Users/jamie/Documents/GitHub/y-websocket";
 
 import { Provider } from "./Provider";
 
@@ -63,33 +61,35 @@ function App() {
      *
      * nvm use 20
      * HOST=localhost PORT=1234 npx y-websocket
+     * "ws:/localhost:1234",
      *
      * https://discuss.yjs.dev/t/how-to-send-yjs-document-through-normal-websocket/2257/4?u=jmcrthrs
      */
-    const provider = new WebsocketProvider(
-      //"ws:/localhost:1234",
-      "ws:/localhost:8080",
-      "room-1",
-      //Date.now(),
-      ydoc
-    );
+    const websocketUrl = "ws:/localhost:8080";
+    const websocket = new WebSocket(websocketUrl);
 
+    // Connection opened
+    websocket.addEventListener("open", (event) => {
+      websocket.send("Hello Server!");
+    });
+
+    // Listen for messages
+    websocket.addEventListener("message", (event) => {
+      console.log("Message from server ", event.data);
+    });
+
+    const provider = new WebsocketProvider(
+      "ws:/localhost:8080",
+      "room-1", //Date.now(),
+      ydoc,
+      { customWebsocket: websocket }
+    );
 
     //const provider = new Provider(ydoc);
 
     // Create an editor-binding which
     // "binds" the quill editor to a Y.Text type.
     const binding = new QuillBinding(ytext, quill, provider.awareness);
-
-    /**
-     * PORT=4444 node node_modules/.bin/y-webrtc-signaling
-     */
-    //const provider = new WebrtcProvider('x2', ydoc, { signaling: ['ws://localhost:4444'] })
-
-    // provider.awareness.setLocalStateField("user", {
-    //   name: "Typing Jimmy",
-    //   color: "blue",
-    // });
   }, []);
 
   return (
