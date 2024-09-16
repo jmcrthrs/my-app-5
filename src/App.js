@@ -112,7 +112,7 @@ function App() {
     );
 
     // const providerOriginal = new WebsocketProviderOriginal(
-    //   "ws:/localhost:8080",
+    //   "ws:/localhost:1234",
     //   "room-1",
     //   ydoc
     // );
@@ -120,13 +120,11 @@ function App() {
     // Create an editor-binding which
     // "binds" the quill editor to a Y.Text type.
     const binding = new QuillBinding(ytext, quill, providerNew.awareness);
+    //const binding = new QuillBinding(ytext, quill, providerOriginal.awareness);
   }, []);
 
   return (
-    <div className="App">
-      <button onClick={()=>{
-        wsRef.current.close()
-      }}>Close websocket</button>
+    <div className="App">     
       <div id="editor" />
     </div>
   );
