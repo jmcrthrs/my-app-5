@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import * as Y from "yjs";
@@ -6,10 +6,14 @@ import { QuillBinding } from "y-quill";
 import Quill from "quill";
 import "quill/dist/quill.core.css";
 import QuillCursors from "quill-cursors";
-//import { WebsocketProvider } from "y-websocket";
-import { WebsocketProvider } from "/Users/jamie/Documents/GitHub/y-websocket";
+import {
+  WebsocketProvider as WebsocketProviderNew,
+  handleWebSocketMessage,
+  handleWebSocketOpen,
+} from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket";
+import { WebsocketProvider as WebsocketProviderOriginal } from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket-original";
 
-import { Provider } from "./Provider";
+import { fromBase64, toBase64 } from 'lib0/buffer';
 
 Quill.register("modules/cursors", QuillCursors);
 
@@ -67,29 +71,41 @@ function App() {
      */
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
+    websocket.binaryType = "arraybuffer";
 
     // Connection opened
-    websocket.addEventListener("open", (event) => {
-      websocket.send("Hello Server!");
+    websocket.addEventListener("open", () => {
+      handleWebSocketOpen(providerNew, websocket);
     });
 
     // Listen for messages
     websocket.addEventListener("message", (event) => {
-      console.log("Message from server ", event.data);
+      const data = fromBase64(event.data)
+      handleWebSocketMessage(providerNew, {data});
     });
 
-    const provider = new WebsocketProvider(
-      "ws:/localhost:8080",
-      "room-1", //Date.now(),
+    const customSend = (p) => {
+      //websocket.send(p);
+      websocket.send(toBase64(p));
+    };
+
+    const providerNew = new WebsocketProviderNew(
+      //"ws:/localhost:1234",
+      "ws:/localhost:8081",
+      "room-1",
       ydoc,
-      { customWebsocket: websocket }
+      { customSend }
     );
 
-    //const provider = new Provider(ydoc);
+    // const providerOriginal = new WebsocketProviderOriginal(
+    //   "ws:/localhost:8080",
+    //   "room-1",
+    //   ydoc
+    // );
 
     // Create an editor-binding which
     // "binds" the quill editor to a Y.Text type.
-    const binding = new QuillBinding(ytext, quill, provider.awareness);
+    const binding = new QuillBinding(ytext, quill, providerNew.awareness);
   }, []);
 
   return (
