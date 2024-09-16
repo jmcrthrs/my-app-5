@@ -71,7 +71,7 @@ function App() {
      */
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
-    websocket.binaryType = "arraybuffer";
+    //websocket.binaryType = "arraybuffer";
 
     // Connection opened
     websocket.addEventListener("open", () => {
@@ -80,12 +80,14 @@ function App() {
 
     // Listen for messages
     websocket.addEventListener("message", (event) => {
+      //https://github.com/yjs/y-websocket/pull/78
       const data = fromBase64(event.data)
       handleWebSocketMessage(providerNew, {data});
     });
 
     const customSend = (p) => {
       //websocket.send(p);
+      //https://github.com/yjs/y-websocket/pull/78
       websocket.send(toBase64(p));
     };
 
