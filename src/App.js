@@ -89,7 +89,9 @@ function App() {
     // Listen for messages
     websocket.addEventListener("message", (event) => {
       //https://github.com/yjs/y-websocket/pull/78
-      const data = fromBase64(event.data);
+      const json = JSON.parse(event.data)
+      const data = fromBase64(json.payload);
+      //const data = fromBase64(event.data);
       handleWebSocketMessage(providerNew, { data });
     });
 
@@ -97,7 +99,8 @@ function App() {
       //websocket.send(p);
       //https://github.com/yjs/y-websocket/pull/78
       try {
-        websocket.send(toBase64(p));
+        websocket.send(JSON.stringify({payload:toBase64(p)}));
+        //websocket.send(toBase64(p));
       } catch (e) {
         console.error(e);
       }
