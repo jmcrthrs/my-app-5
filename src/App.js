@@ -107,9 +107,6 @@ function App() {
     };
 
     const providerNew = new WebsocketProviderNew(
-      //"ws:/localhost:1234",
-      "",
-      "room-1",
       ydoc,
       { customSend }
     );
