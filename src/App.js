@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { fromBase64, toBase64 } from "lib0/buffer";
 import Editor from "./Editor.js";
 
 function App() {
-  const [ws, setWs] = useState(null);
+  const ws = useRef(null);
+  //const [ws, setWs] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [message, setMessage] = useState(null);
   const [noteId, setNoteId] = useState("1");
@@ -24,10 +25,11 @@ function App() {
      * https://discuss.yjs.dev/t/how-to-send-yjs-document-through-normal-websocket/2257/4?u=jmcrthrs
      */
 
-    if (ws) return;
+    if (ws.current) return;
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
-    setWs(websocket);
+    ws.current = websocket
+    //setWs(websocket);
 
     // Listen for messages
     websocket.addEventListener("message", (event) => {
@@ -38,11 +40,10 @@ function App() {
     });
   }, [ws]);
 
-
   const customSend = (p) => {
     //https://github.com/yjs/y-websocket/pull/78
     try {
-      ws.send(JSON.stringify({ payload: toBase64(p) }));
+      ws.current.send(JSON.stringify({ payload: toBase64(p) }));
     } catch (e) {
       console.error(e);
     }
@@ -58,11 +59,7 @@ function App() {
       />
       <button onClick={() => setShowEditor(true)}>Load editor</button>
       {showEditor && (
-        <Editor
-          noteId={noteId}
-          message={message}
-          sendMessage={customSend}
-        />
+        <Editor noteId={noteId} message={message} sendMessage={customSend} />
       )}
     </div>
   );
