@@ -13,7 +13,6 @@ import {
   WebsocketProvider as WebsocketProviderNew,
   handleWebSocketMessage,
   handleInitialConnection,
-  handleWebSocketClose,
 } from "./y-websocket.js";
 
 import { WebsocketProvider as WebsocketProviderOriginal } from "./y-websocket-original.js";
@@ -48,30 +47,43 @@ function Editor({ noteId, message, sendMessage }) {
       theme: "snow", // 'bubble' is also great
     });
 
-    // A Yjs document holds the shared data
-    const ydoc = new Y.Doc();
-    // Define a shared text type on the document
-    const ytext = ydoc.getText(noteId);
-
-    providerNew.current = new WebsocketProviderNew(ydoc, { customSend: sendMessage });
 
     setTimeout(() => {
-      // delay to ensure websocket is connected
-      handleInitialConnection(providerNew.current);
+      // A Yjs document holds the shared data
+      const ydoc = new Y.Doc();
+      // Define a shared text type on the document
+      const ytext = ydoc.getText(noteId);
+  
+      providerNew.current = new WebsocketProviderNew(ydoc, { customSend: sendMessage });
+  
+      setTimeout(() => {
+        // delay to ensure websocket is connected
+        handleInitialConnection(providerNew.current);
+      }, 1000);
+  
+      const binding = new QuillBinding(
+        ytext,
+        quill,
+        providerNew.current.awareness
+      );
+
+      /**
+       * ONLY SET FOR FIRST USER!
+       */
+      quill.setContents([
+        { insert: "Hello " },
+        { insert: "World!", attributes: { bold: true } },
+        { insert: "\n" },
+      ]);
+  
+      providerNew.current.awareness.setLocalStateField('user', {
+        // Define a print name that should be displayed
+        name: 'Emmanuelle Charpentier',
+        // Define a color that should be associated to the user:
+        color: '#ffb61e' // should be a hex color
+      })
+      
     }, 1000);
-
-    const binding = new QuillBinding(
-      ytext,
-      quill,
-      providerNew.current.awareness
-    );
-
-    providerNew.current.awareness.setLocalStateField('user', {
-      // Define a print name that should be displayed
-      name: 'Emmanuelle Charpentier',
-      // Define a color that should be associated to the user:
-      color: '#ffb61e' // should be a hex color
-    })
 
     //   const providerOriginal = new WebsocketProviderOriginal(
     //     "ws:/localhost:1234",
@@ -80,15 +92,8 @@ function Editor({ noteId, message, sendMessage }) {
     //   );
     //  new QuillBinding(ytext, quill, providerOriginal.awareness);
 
-    /**
-     * ONLY SET FOR FIRST USER!
-     */
 
-    quill.setContents([
-      { insert: "Hello " },
-      { insert: "World!", attributes: { bold: true } },
-      { insert: "\n" },
-    ]);
+    
   }, [noteId]);
 
   useEffect(() => {

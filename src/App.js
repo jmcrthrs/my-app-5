@@ -12,7 +12,6 @@ import { fromBase64, toBase64 } from "lib0/buffer";
 import Editor from "./Editor.js";
 
 function App() {
-  //const wsRef = React.useRef(null);
   const [ws, setWs] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [message, setMessage] = useState(null);
@@ -36,14 +35,7 @@ function App() {
     if (ws) return;
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
-    //wsRef.current = websocket;
     setWs(websocket);
-    //websocket.binaryType = "arraybuffer";
-
-    // // Connection opened
-    // websocket.addEventListener("close", () => {
-    // //  handleWebSocketClose(providerNew, websocket);
-    // });
 
     // Listen for messages
     websocket.addEventListener("message", (event) => {
@@ -56,11 +48,9 @@ function App() {
 
 
   const customSend = (p) => {
-    //websocket.send(p);
     //https://github.com/yjs/y-websocket/pull/78
     try {
       ws.send(JSON.stringify({ payload: toBase64(p) }));
-      //websocket.send(toBase64(p));
     } catch (e) {
       console.error(e);
     }
