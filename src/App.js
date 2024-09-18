@@ -1,12 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
-import * as Y from "yjs";
-import {
-  WebsocketProvider as WebsocketProviderNew,
-  handleWebSocketMessage,
-  handleWebSocketOpen,
-  handleWebSocketClose,
-} from "./y-websocket.js";
-import { WebsocketProvider as WebsocketProviderOriginal } from "./y-websocket-original.js";
+import React, { useEffect, useState } from "react";
 
 import { fromBase64, toBase64 } from "lib0/buffer";
 import Editor from "./Editor.js";
@@ -44,7 +36,7 @@ function App() {
       const data = fromBase64(json.payload);
       setMessage(data);
     });
-  }, []);
+  }, [ws]);
 
 
   const customSend = (p) => {

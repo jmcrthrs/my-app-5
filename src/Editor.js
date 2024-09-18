@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-
-import { fromBase64, toBase64 } from "lib0/buffer";
+import React, { useEffect, useRef } from "react";
 
 import * as Y from "yjs";
 import { QuillBinding } from "y-quill";
@@ -14,8 +12,6 @@ import {
   handleWebSocketMessage,
   handleInitialConnection,
 } from "./y-websocket.js";
-
-import { WebsocketProvider as WebsocketProviderOriginal } from "./y-websocket-original.js";
 
 Quill.register("modules/cursors", QuillCursors);
 
@@ -61,7 +57,7 @@ function Editor({ noteId, message, sendMessage }) {
         handleInitialConnection(providerNew.current);
       }, 1000);
   
-      const binding = new QuillBinding(
+      new QuillBinding(
         ytext,
         quill,
         providerNew.current.awareness
@@ -94,7 +90,7 @@ function Editor({ noteId, message, sendMessage }) {
 
 
     
-  }, [noteId]);
+  }, [noteId, sendMessage]);
 
   useEffect(() => {
     if (!message) return;
