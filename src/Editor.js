@@ -66,6 +66,13 @@ function Editor({ noteId, message, sendMessage }) {
       providerNew.current.awareness
     );
 
+    providerNew.current.awareness.setLocalStateField('user', {
+      // Define a print name that should be displayed
+      name: 'Emmanuelle Charpentier',
+      // Define a color that should be associated to the user:
+      color: '#ffb61e' // should be a hex color
+    })
+
     //   const providerOriginal = new WebsocketProviderOriginal(
     //     "ws:/localhost:1234",
     //     "room-1",
