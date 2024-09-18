@@ -1,63 +1,24 @@
 import React, { useCallback, useEffect, useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
 import * as Y from "yjs";
-import { QuillBinding } from "y-quill";
-import Quill from "quill";
-import "quill/dist/quill.core.css";
-import QuillCursors from "quill-cursors";
 import {
   WebsocketProvider as WebsocketProviderNew,
   handleWebSocketMessage,
   handleWebSocketOpen,
-  handleWebSocketClose
-} from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket";
-import { WebsocketProvider as WebsocketProviderOriginal } from "/Users/jamie/Documents/GitHub/y-websocket/src/y-websocket-original";
+  handleWebSocketClose,
+} from "./y-websocket.js";
+import { WebsocketProvider as WebsocketProviderOriginal } from "./y-websocket-original.js";
 
 import { fromBase64, toBase64 } from "lib0/buffer";
-
-Quill.register("modules/cursors", QuillCursors);
+import Editor from "./Editor.js";
 
 function App() {
-  const [number, setNumber] = useState(0);
-  const wsRef = React.useRef(null)
-  console.log("render", number);
+  //const wsRef = React.useRef(null);
+  const [ws, setWs] = useState(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [noteId, setNoteId] = useState("1");
 
   useEffect(() => {
-    setNumber((num) => num + 1);
-  }, []);
-
-  useEffect(() => {
-    const editor = document.querySelector("#editor");
-    if (editor.hasChildNodes()) {
-      return;
-    }
-
-    const quill = new Quill(document.querySelector("#editor"), {
-      modules: {
-        cursors: true,
-        toolbar: [
-          // adding some basic Quill content features
-          [{ header: [1, 2, false] }],
-          ["bold", "italic", "underline"],
-          ["image", "code-block"],
-        ],
-        history: {
-          // Local undo shouldn't undo changes
-          // from remote users
-          userOnly: true,
-        },
-      },
-      placeholder: "Start collaborating...",
-      theme: "snow", // 'bubble' is also great
-    });
-
-    // A Yjs document holds the shared data
-    const ydoc = new Y.Doc();
-    // Define a shared text type on the document
-    const ytext = ydoc.getText("quill");
-    console.log(ytext);
-
     // connect to the public demo server (not in production!)
     /**
      * cd websocket
@@ -71,61 +32,56 @@ function App() {
      *
      * https://discuss.yjs.dev/t/how-to-send-yjs-document-through-normal-websocket/2257/4?u=jmcrthrs
      */
+
+    if (ws) return;
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
-    wsRef.current = websocket
+    //wsRef.current = websocket;
+    setWs(websocket);
     //websocket.binaryType = "arraybuffer";
 
-    // Connection opened
-    websocket.addEventListener("open", () => {
-      handleWebSocketOpen(providerNew, websocket);
-    });
-
-    // Connection opened
-    websocket.addEventListener("close", () => {
-      handleWebSocketClose(providerNew, websocket);
-    });
+    // // Connection opened
+    // websocket.addEventListener("close", () => {
+    // //  handleWebSocketClose(providerNew, websocket);
+    // });
 
     // Listen for messages
     websocket.addEventListener("message", (event) => {
       //https://github.com/yjs/y-websocket/pull/78
-      const json = JSON.parse(event.data)
+      const json = JSON.parse(event.data);
       const data = fromBase64(json.payload);
-      //const data = fromBase64(event.data);
-      handleWebSocketMessage(providerNew, { data });
+      setMessage(data);
     });
-
-    const customSend = (p) => {
-      //websocket.send(p);
-      //https://github.com/yjs/y-websocket/pull/78
-      try {
-        websocket.send(JSON.stringify({payload:toBase64(p)}));
-        //websocket.send(toBase64(p));
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    const providerNew = new WebsocketProviderNew(
-      ydoc,
-      { customSend }
-    );
-
-    // const providerOriginal = new WebsocketProviderOriginal(
-    //   "ws:/localhost:1234",
-    //   "room-1",
-    //   ydoc
-    // );
-
-    // Create an editor-binding which
-    // "binds" the quill editor to a Y.Text type.
-    const binding = new QuillBinding(ytext, quill, providerNew.awareness);
-    //const binding = new QuillBinding(ytext, quill, providerOriginal.awareness);
   }, []);
 
+
+  const customSend = (p) => {
+    //websocket.send(p);
+    //https://github.com/yjs/y-websocket/pull/78
+    try {
+      ws.send(JSON.stringify({ payload: toBase64(p) }));
+      //websocket.send(toBase64(p));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  if (!ws) return null;
+
   return (
-    <div className="App">     
-      <div id="editor" />
+    <div className="App">
+      <input
+        value={noteId}
+        onChange={(event) => setNoteId(event.target.value)}
+      />
+      <button onClick={() => setShowEditor(true)}>Load editor</button>
+      {showEditor && (
+        <Editor
+          noteId={noteId}
+          message={message}
+          sendMessage={customSend}
+        />
+      )}
     </div>
   );
 }
