@@ -9,6 +9,7 @@ function App() {
   const [showEditor, setShowEditor] = useState(false);
   const [message, setMessage] = useState(null);
   const [noteId, setNoteId] = useState("1");
+  const [firstUser, setFirstUser] = useState(true);
 
   useEffect(() => {
     // connect to the public demo server (not in production!)
@@ -28,7 +29,7 @@ function App() {
     if (ws.current) return;
     const websocketUrl = "ws:/localhost:8080";
     const websocket = new WebSocket(websocketUrl);
-    ws.current = websocket
+    ws.current = websocket;
     //setWs(websocket);
 
     // Listen for messages
@@ -57,9 +58,20 @@ function App() {
         value={noteId}
         onChange={(event) => setNoteId(event.target.value)}
       />
+
+      <input
+        type="checkbox"
+        checked={firstUser}
+        onChange={() => setFirstUser(!firstUser)}
+      />
       <button onClick={() => setShowEditor(true)}>Load editor</button>
       {showEditor && (
-        <Editor noteId={noteId} message={message} sendMessage={customSend} />
+        <Editor
+          setText={firstUser}
+          noteId={noteId}
+          message={message}
+          sendMessage={customSend}
+        />
       )}
     </div>
   );

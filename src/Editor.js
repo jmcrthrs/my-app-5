@@ -15,7 +15,7 @@ import {
 
 Quill.register("modules/cursors", QuillCursors);
 
-function Editor({ noteId, message, sendMessage }) {
+function Editor({ noteId, setText, message, sendMessage }) {
   const providerNew = useRef(null);
 
   useEffect(() => {
@@ -72,11 +72,13 @@ function Editor({ noteId, message, sendMessage }) {
       /**
        * ONLY SET FOR FIRST USER!
        */
-      quill.setContents([
-        { insert: "Hello " },
-        { insert: "World!", attributes: { bold: true } },
-        { insert: "\n" },
-      ]);
+      if (setText) {
+        quill.setContents([
+          { insert: "Hello " },
+          { insert: "World!", attributes: { bold: true } },
+          { insert: "\n" },
+        ]);
+      }
 
       providerNew.current.awareness.setLocalStateField("user", {
         // Define a print name that should be displayed
