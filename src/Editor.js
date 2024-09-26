@@ -43,57 +43,48 @@ function Editor({ noteId, setText, message, sendMessage }) {
       theme: "snow", // 'bubble' is also great
     });
 
-    // setTimeout(() => {
-      // A Yjs document holds the shared data
-      const ydoc = new Y.Doc();
-      // Define a shared text type on the document
-      const ytext = ydoc.getText(noteId);
+    // A Yjs document holds the shared data
+    const ydoc = new Y.Doc();
+    // Define a shared text type on the document
+    const ytext = ydoc.getText(noteId);
 
-      providerNew.current = new WebsocketProviderNew(ydoc, {
-        customSend: sendMessage,
-      });
-      
-      new QuillBinding(ytext, quill, providerNew.current.awareness);
-      
-           // setTimeout(() => {
-              // delay to ensure websocket is connected
-              handleInitialConnection(providerNew.current);
-           // }, 500);
-      
-      // You can observe when a user updates their awareness information
-      providerNew.current.awareness.on("change", (changes) => {
-        // Whenever somebody updates their awareness information,
-        // we log all awareness information from all users.
-        console.log(
-          Array.from(providerNew.current.awareness.getStates().values())
-        );
-      });
+    providerNew.current = new WebsocketProviderNew(ydoc, {
+      customSend: sendMessage,
+    });
 
-      /**
-       * ONLY SET FOR FIRST USER!
-       */
-      if (setText) {
-        quill.setContents([
-          { insert: "Hello " },
-          { insert: "World!", attributes: { bold: true } },
-          { insert: "\n" },
-        ]);
-      }
+    new QuillBinding(ytext, quill, providerNew.current.awareness);
 
-      providerNew.current.awareness.setLocalStateField("user", {
-        // Define a print name that should be displayed
-        name: "Emmanuelle Charpentier",
-        // Define a color that should be associated to the user:
-        color: "#ffb61e", // should be a hex color
-      });
-    //}, 1000);
+     setTimeout(() => {
+    // delay to ensure websocket is connected
+    handleInitialConnection(providerNew.current);
+     }, 1000);
 
-    //   const providerOriginal = new WebsocketProviderOriginal(
-    //     "ws:/localhost:1234",
-    //     "room-1",
-    //     ydoc
-    //   );
-    //  new QuillBinding(ytext, quill, providerOriginal.awareness);
+    // You can observe when a user updates their awareness information
+    providerNew.current.awareness.on("change", (changes) => {
+      // Whenever somebody updates their awareness information,
+      // we log all awareness information from all users.
+      console.log(
+        Array.from(providerNew.current.awareness.getStates().values())
+      );
+    });
+
+    /**
+     * ONLY SET FOR FIRST USER!
+     */
+    if (setText) {
+      quill.setContents([
+        { insert: "Hello " },
+        { insert: "World!", attributes: { bold: true } },
+        { insert: "\n" },
+      ]);
+    }
+
+    providerNew.current.awareness.setLocalStateField("user", {
+      // Define a print name that should be displayed
+      name: "Emmanuelle Charpentier",
+      // Define a color that should be associated to the user:
+      color: "#ffb61e", // should be a hex color
+    });
   }, [noteId, sendMessage]);
 
   useEffect(() => {
