@@ -9,7 +9,7 @@ function App() {
   const [showEditor, setShowEditor] = useState(false);
   const [message, setMessage] = useState(null);
   const [noteId, setNoteId] = useState("1");
-  const [firstUser, setFirstUser] = useState(true);
+  const [firstUser, setFirstUser] = useState(false);
 
   useEffect(() => {
     // connect to the public demo server (not in production!)

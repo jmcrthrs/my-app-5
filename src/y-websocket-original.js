@@ -42,6 +42,7 @@ messageHandlers[messageSync] = (
     provider.doc,
     provider
   )
+  console.log('syncMessageType', syncMessageType)
   if (
     emitSynced && syncMessageType === syncProtocol.messageYjsSyncStep2 &&
     !provider.synced
