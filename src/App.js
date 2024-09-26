@@ -7,7 +7,7 @@ import EditorOriginal from "./EditorOriginal.js";
 function App() {
   const [showEditor, setShowEditor] = useState(false);
   const [noteId, setNoteId] = useState("1");
-  const [firstUser, setFirstUser] = useState(true);
+  const [firstUser, setFirstUser] = useState(false);
 
   return (
     <div className="App">

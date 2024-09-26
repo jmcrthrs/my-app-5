@@ -50,15 +50,6 @@ function EditorOriginal({ noteId, setText }) {
 
     new QuillBinding(ytext, quill, providerOriginal.awareness);
 
-    // You can observe when a user updates their awareness information
-    providerOriginal.awareness.on("change", (changes) => {
-      // Whenever somebody updates their awareness information,
-      // we log all awareness information from all users.
-      console.log(
-        Array.from(providerOriginal.awareness.getStates().values())
-      );
-    });
-
     /**
      * ONLY SET FOR FIRST USER!
      */
