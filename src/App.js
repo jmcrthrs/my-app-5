@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { fromBase64, toBase64 } from "lib0/buffer";
-import Editor from "./Editor.js";
 import EditorOriginal from "./EditorOriginal.js";
 
 function App() {
@@ -22,17 +21,7 @@ function App() {
         onChange={() => setFirstUser(!firstUser)}
       />
       <button onClick={() => setShowEditor(true)}>Load editor</button>
-      {showEditor && (
-        <>
-          {/* <Editor
-            setText={firstUser}
-            noteId={noteId}
-            message={message}
-            sendMessage={customSend}
-          /> */}
-          <EditorOriginal setText={firstUser} noteId={noteId} />
-        </>
-      )}
+      {showEditor && <EditorOriginal setText={firstUser} noteId={noteId} />}
     </div>
   );
 }
