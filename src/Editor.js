@@ -43,7 +43,7 @@ function Editor({ noteId, setText, message, sendMessage }) {
       theme: "snow", // 'bubble' is also great
     });
 
-    setTimeout(() => {
+    // setTimeout(() => {
       // A Yjs document holds the shared data
       const ydoc = new Y.Doc();
       // Define a shared text type on the document
@@ -52,11 +52,14 @@ function Editor({ noteId, setText, message, sendMessage }) {
       providerNew.current = new WebsocketProviderNew(ydoc, {
         customSend: sendMessage,
       });
-
-      handleInitialConnection(providerNew.current);
-
+      
       new QuillBinding(ytext, quill, providerNew.current.awareness);
-
+      
+           // setTimeout(() => {
+              // delay to ensure websocket is connected
+              handleInitialConnection(providerNew.current);
+           // }, 500);
+      
       // You can observe when a user updates their awareness information
       providerNew.current.awareness.on("change", (changes) => {
         // Whenever somebody updates their awareness information,
@@ -83,7 +86,7 @@ function Editor({ noteId, setText, message, sendMessage }) {
         // Define a color that should be associated to the user:
         color: "#ffb61e", // should be a hex color
       });
-    }, 1000);
+    //}, 1000);
 
     //   const providerOriginal = new WebsocketProviderOriginal(
     //     "ws:/localhost:1234",
