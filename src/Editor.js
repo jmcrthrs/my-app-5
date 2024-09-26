@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import * as Y from "yjs";
 import { QuillBinding } from "y-quill";
 
+import { fromBase64, toBase64 } from "lib0/buffer";
 import Quill from "quill";
 import "quill/dist/quill.core.css";
 import QuillCursors from "quill-cursors";
@@ -52,39 +53,39 @@ function Editor({ noteId, setText, message, sendMessage }) {
       customSend: sendMessage,
     });
 
-    new QuillBinding(ytext, quill, providerNew.current.awareness);
+    //new QuillBinding(ytext, quill, providerNew.current.awareness);
+    new QuillBinding(ytext, quill);
 
-     setTimeout(() => {
-    // delay to ensure websocket is connected
-    handleInitialConnection(providerNew.current);
-     }, 1000);
+   const data = fromBase64(
+      "AAGQAQIF7vHntQsABAEBMQZIZWxsbyCG7vHntQsFBGJvbGQEdHJ1ZYTu8ee1CwYGV29ybGQhhu7x57ULDARib2xkBG51bGyE7vHntQsNAQoD5IbG5wYAxO7x57ULDO7x57ULDQEgweSGxucGAO7x57ULDQPE5IbG5wYD7vHntQsNCWkgYW0gaGVyZQHkhsbnBgEBAw=="
+    );
+    handleWebSocketMessage(providerNew.current, { data });
 
-    // You can observe when a user updates their awareness information
-    providerNew.current.awareness.on("change", (changes) => {
-      // Whenever somebody updates their awareness information,
-      // we log all awareness information from all users.
-      console.log(
-        Array.from(providerNew.current.awareness.getStates().values())
-      );
-    });
+    setTimeout(() => {
+      // delay to ensure websocket is connected
+      handleInitialConnection(providerNew.current);
+    }, 500);
+
 
     /**
      * ONLY SET FOR FIRST USER!
      */
-    if (setText) {
-      quill.setContents([
-        { insert: "Hello " },
-        { insert: "World!", attributes: { bold: true } },
-        { insert: "\n" },
-      ]);
-    }
+    // setTimeout(() => {
+    //   if (setText) {
+    //     quill.setContents([
+    //       { insert: "Hello " },
+    //       { insert: "World!", attributes: { bold: true } },
+    //       { insert: "\n" },
+    //     ]);
+    //   }
+    // }, 2000);
 
-    providerNew.current.awareness.setLocalStateField("user", {
-      // Define a print name that should be displayed
-      name: "Emmanuelle Charpentier",
-      // Define a color that should be associated to the user:
-      color: "#ffb61e", // should be a hex color
-    });
+    // providerNew.current.awareness.setLocalStateField("user", {
+    //   // Define a print name that should be displayed
+    //   name: "Emmanuelle Charpentier",
+    //   // Define a color that should be associated to the user:
+    //   color: "#ffb61e", // should be a hex color
+    // });
   }, [noteId, sendMessage]);
 
   useEffect(() => {

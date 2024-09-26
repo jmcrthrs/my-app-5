@@ -94,7 +94,7 @@ const readMessage = (provider, buf, emitSynced) => {
   return encoder;
 };
 
-export const handleWebSocketClose = (provider, websocket) => {  
+export const handleWebSocketClose = (provider, websocket) => {
   if (provider.wsconnected) {
     provider.synced = false;
     // update awareness (all users except local left)
@@ -113,6 +113,12 @@ export const handleWebSocketClose = (provider, websocket) => {
   }
 };
 
+export const getFullDocSyncStep = (provider) => {
+  const encoder = encoding.createEncoder();
+  encoding.writeVarUint(encoder, messageSync);
+  syncProtocol.writeSyncStep2(encoder, provider.doc);
+  return encoding.toUint8Array(encoder);
+};
 
 export const handleWebSocketOpen = (provider) => {
   provider.emit("status", [
@@ -125,7 +131,11 @@ export const handleWebSocketOpen = (provider) => {
   encoding.writeVarUint(encoder, messageSync);
   syncProtocol.writeSyncStep1(encoder, provider.doc);
   if (provider.customSend) {
-    provider.customSend(encoding.toUint8Array(encoder));
+    provider.customSend(
+      encoding.toUint8Array(encoder),
+      messageSync,
+      getFullDocSyncStep(provider)
+    );
   }
   // broadcast local awareness state
   if (provider.awareness.getLocalState() !== null) {
@@ -138,7 +148,10 @@ export const handleWebSocketOpen = (provider) => {
       ])
     );
     if (provider.customSend) {
-      provider.customSend(encoding.toUint8Array(encoderAwarenessState));
+      provider.customSend(
+        encoding.toUint8Array(encoderAwarenessState),
+        messageAwareness
+      );
     }
   }
 };
@@ -149,7 +162,13 @@ export const handleWebSocketMessage = (provider, event) => {
   const encoder = readMessage(provider, new Uint8Array(event.data), true);
   if (encoding.length(encoder) > 1) {
     if (provider.customSend) {
-      provider.customSend(encoding.toUint8Array(encoder));
+      const decoder = decoding.createDecoder(new Uint8Array(event.data));
+      const messageType = decoding.readVarUint(decoder);
+      provider.customSend(
+        encoding.toUint8Array(encoder),
+        messageType,
+        getFullDocSyncStep(provider)
+      );
     }
   }
 };
@@ -158,9 +177,9 @@ export const handleWebSocketMessage = (provider, event) => {
  * @param {WebsocketProvider} provider
  * @param {ArrayBuffer} buf
  */
-const broadcastMessage = (provider, buf) => {
+const broadcastMessage = (provider, buf, messageType) => {
   if (provider.customSend) {
-    provider.customSend(buf);
+    provider.customSend(buf, messageType, getFullDocSyncStep(provider));
   }
 };
 
@@ -208,7 +227,7 @@ export class WebsocketProvider extends Observable {
         const encoder = encoding.createEncoder();
         encoding.writeVarUint(encoder, messageSync);
         syncProtocol.writeUpdate(encoder, update);
-        broadcastMessage(this, encoding.toUint8Array(encoder));
+        broadcastMessage(this, encoding.toUint8Array(encoder), messageSync);
       }
     };
     this.doc.on("update", this._updateHandler);
@@ -224,7 +243,7 @@ export class WebsocketProvider extends Observable {
         encoder,
         awarenessProtocol.encodeAwarenessUpdate(awareness, changedClients)
       );
-      broadcastMessage(this, encoding.toUint8Array(encoder));
+      broadcastMessage(this, encoding.toUint8Array(encoder), messageAwareness);
     };
 
     awareness.on("update", this._awarenessUpdateHandler);
