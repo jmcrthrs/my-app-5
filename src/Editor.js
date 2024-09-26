@@ -53,10 +53,7 @@ function Editor({ noteId, setText, message, sendMessage }) {
         customSend: sendMessage,
       });
 
-      setTimeout(() => {
-        // delay to ensure websocket is connected
-        handleInitialConnection(providerNew.current);
-      }, 1000);
+      handleInitialConnection(providerNew.current);
 
       new QuillBinding(ytext, quill, providerNew.current.awareness);
 
