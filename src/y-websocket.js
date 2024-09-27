@@ -130,13 +130,8 @@ export const handleWebSocketOpen = (provider) => {
   const encoder = encoding.createEncoder();
   encoding.writeVarUint(encoder, messageSync);
   syncProtocol.writeSyncStep1(encoder, provider.doc);
-  if (provider.customSend) {
-    provider.customSend(
-      encoding.toUint8Array(encoder),
-      messageSync,
-      getFullDocSyncStep(provider)
-    );
-  }
+  provider.customSend(encoding.toUint8Array(encoder), messageSync);
+
   // broadcast local awareness state
   if (provider.awareness.getLocalState() !== null) {
     const encoderAwarenessState = encoding.createEncoder();
@@ -147,12 +142,11 @@ export const handleWebSocketOpen = (provider) => {
         provider.doc.clientID,
       ])
     );
-    if (provider.customSend) {
-      provider.customSend(
-        encoding.toUint8Array(encoderAwarenessState),
-        messageAwareness
-      );
-    }
+
+    provider.customSend(
+      encoding.toUint8Array(encoderAwarenessState),
+      messageAwareness
+    );
   }
 };
 
@@ -161,15 +155,9 @@ export const handleInitialConnection = handleWebSocketOpen;
 export const handleWebSocketMessage = (provider, event) => {
   const encoder = readMessage(provider, new Uint8Array(event.data), true);
   if (encoding.length(encoder) > 1) {
-    if (provider.customSend) {
-      const decoder = decoding.createDecoder(new Uint8Array(event.data));
-      const messageType = decoding.readVarUint(decoder);
-      provider.customSend(
-        encoding.toUint8Array(encoder),
-        messageType,
-        getFullDocSyncStep(provider)
-      );
-    }
+    const decoder = decoding.createDecoder(new Uint8Array(event.data));
+    const messageType = decoding.readVarUint(decoder);
+    provider.customSend(encoding.toUint8Array(encoder), messageType);
   }
 };
 
@@ -178,9 +166,7 @@ export const handleWebSocketMessage = (provider, event) => {
  * @param {ArrayBuffer} buf
  */
 const broadcastMessage = (provider, buf, messageType) => {
-  if (provider.customSend) {
-    provider.customSend(buf, messageType, getFullDocSyncStep(provider));
-  }
+  provider.customSend(buf, messageType);
 };
 
 /**

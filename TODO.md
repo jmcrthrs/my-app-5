@@ -10,3 +10,17 @@ Do we need to lock?
 
 Full YDoc will be available from GET note/{key} 
 We can init the doc with this before connecting to the websocket? Or after.
+
+
+Payload
+  notekey
+  userid
+  data
+  type (awareness | sync)
+
+Introduce a new websocket message
+  type: 
+  notekey
+  userid
+  data (fullYDoc)
+  type (awareness | sync)

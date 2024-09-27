@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import * as Y from "yjs";
 import { QuillBinding } from "y-quill";
@@ -12,6 +12,8 @@ import {
   WebsocketProvider as WebsocketProviderNew,
   handleWebSocketMessage,
   handleInitialConnection,
+  getFullDocSyncStep,
+  messageSync,
 } from "./y-websocket.js";
 
 Quill.register("modules/cursors", QuillCursors);
@@ -50,15 +52,20 @@ function Editor({ noteId, setText, message, sendMessage }) {
     const ytext = ydoc.getText(noteId);
 
     providerNew.current = new WebsocketProviderNew(ydoc, {
-      customSend: sendMessage,
+      customSend: (p, messageType) => {
+        sendMessage(p, messageType);
+        if (messageType === messageSync) {
+          console.log(getFullDocSyncStep(providerNew.current));
+        }
+      },
     });
 
-    //new QuillBinding(ytext, quill, providerNew.current.awareness);
-    new QuillBinding(ytext, quill);
+    new QuillBinding(ytext, quill, providerNew.current.awareness);
 
-   const data = fromBase64(
+    const data = fromBase64(
       "AAGQAQIF7vHntQsABAEBMQZIZWxsbyCG7vHntQsFBGJvbGQEdHJ1ZYTu8ee1CwYGV29ybGQhhu7x57ULDARib2xkBG51bGyE7vHntQsNAQoD5IbG5wYAxO7x57ULDO7x57ULDQEgweSGxucGAO7x57ULDQPE5IbG5wYD7vHntQsNCWkgYW0gaGVyZQHkhsbnBgEBAw=="
     );
+
     handleWebSocketMessage(providerNew.current, { data });
 
     setTimeout(() => {
@@ -67,25 +74,12 @@ function Editor({ noteId, setText, message, sendMessage }) {
     }, 500);
 
 
-    /**
-     * ONLY SET FOR FIRST USER!
-     */
-    // setTimeout(() => {
-    //   if (setText) {
-    //     quill.setContents([
-    //       { insert: "Hello " },
-    //       { insert: "World!", attributes: { bold: true } },
-    //       { insert: "\n" },
-    //     ]);
-    //   }
-    // }, 2000);
-
-    // providerNew.current.awareness.setLocalStateField("user", {
-    //   // Define a print name that should be displayed
-    //   name: "Emmanuelle Charpentier",
-    //   // Define a color that should be associated to the user:
-    //   color: "#ffb61e", // should be a hex color
-    // });
+    providerNew.current.awareness.setLocalStateField("user", {
+      // Define a print name that should be displayed
+      name: "Emmanuelle Charpentier",
+      // Define a color that should be associated to the user:
+      color: "#ffb61e", // should be a hex color
+    });
   }, [noteId, sendMessage]);
 
   useEffect(() => {
