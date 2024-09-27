@@ -41,16 +41,12 @@ function App() {
     });
   }, [ws]);
 
-  const customSend = (p, messageType, fullDoc) => {
+  const customSend = (p, messageType) => {
     //https://github.com/yjs/y-websocket/pull/78
-    console.log(messageType, p);
-    const fullDocFinal = fullDoc ? toBase64(fullDoc) : null;
-
     try {
       ws.current.send(
         JSON.stringify({
           messageType,
-          fullDocFinal,
           payload: toBase64(p),
         })
       );
